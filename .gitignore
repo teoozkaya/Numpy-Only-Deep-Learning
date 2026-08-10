@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# reference snippets to read while implementing, never committed
+reference_*.py
+
+# datasets and run outputs
+data/mnist/
+runs/
+*.npz
+*.png
+
+.DS_Store
+.idea/
+.vscode/
+
+# local working notes, not published
+CLAUDE.md
