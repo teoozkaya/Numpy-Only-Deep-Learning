@@ -12,7 +12,7 @@ class Sigmoid:
         self.cache: Optional[Tuple[np.ndarray, ...]] = None
 
     def forward(self, x):
-        self.cache = 1 / (1 + np.exp(x))
+        self.cache = 1 / (1 + np.exp(-x))
         return self.cache
     
     def backward(self, dout):
