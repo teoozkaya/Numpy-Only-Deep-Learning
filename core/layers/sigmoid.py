@@ -12,9 +12,11 @@ class Sigmoid:
         self.cache: Optional[Tuple[np.ndarray, ...]] = None
 
     def forward(self, x):
-        self.cache = 1 / (1 + np.exp(-x))
-        return self.cache
+        sigmo = 1 / (1 + np.exp(-x))
+        self.cache = (sigmo, )
+        return sigmo
     
     def backward(self, dout):
-        grad = self.cache*(1 - self.cache)
+        (out, ) = self.cache
+        grad = out * (1 - out)
         return dout * grad

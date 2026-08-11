@@ -34,7 +34,7 @@ def test_layer_gradients(name: str, rng: np.random.Generator) -> None:
     shape = (registry.BATCH,) + registry.LAYERS[name][3]
     x = rng.standard_normal(shape)
 
-    errors = check_layer(layer, x, seed=0)
+    errors = check_layer(layer, x, seed=1234)
 
     bad = {key: err for key, err in errors.items() if not err < TOL}
     assert not bad, "{}: relative error too large -> {}".format(
