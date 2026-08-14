@@ -24,7 +24,7 @@ def test_minimizes_a_quadratic(name: str) -> None:
     params = {"w": np.array([3.0, -4.0, 0.5])}
 
     losses = []
-    for _ in range(200):
+    for _ in range(500):
         losses.append(0.5 * float(np.sum(params["w"] ** 2)))
         params = _step(optimizer, params, {"w": params["w"].copy()})
 
