@@ -25,11 +25,12 @@ LAYERS: Dict[str, Tuple[str, str, Callable[[Any], Any], Tuple[int, ...]]] = {
     "batchnorm": ("core.layers.batchnorm", "BatchNorm", lambda cls: cls(6), (6,)),
     "conv": ("core.layers.conv", "Conv2d", lambda cls: cls(2, 3, 3), (2, 6, 6)),
     "pool": ("core.layers.pool", "MaxPool", lambda cls: cls(2, 2), (2, 6, 6)),
+    # p=0.0 makes the mask deterministic, which is what the numerical checks
+    # need. A fixed seed is not enough: check_layer calls forward hundreds of
+    # times and the generator advances on every call, so each evaluation would
+    # see a different mask.
+    "dropout": ("core.layers.dropout", "Dropout", lambda cls: cls(p=0.0), (6,)),
 }
-
-# Dropout is excluded from the gradient checks above: its mask is random, so a
-# numerical check only makes sense once you can pin the mask (fixed seed, or
-# p=0.0). Add it here when you decide how to expose that.
 
 # name -> (module, attribute)
 LOSSES: Dict[str, Tuple[str, str]] = {

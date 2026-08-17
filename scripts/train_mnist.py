@@ -53,6 +53,11 @@ def import_core():
         ReLU = None
         missing.append("core.layers.relu.ReLU")
     try:
+        from core.layers.dropout import Dropout
+    except ImportError:
+        Dropout = None
+        missing.append("core.layers.dropout.Dropout")
+    try:
         from core.losses.softmax_cross_entropy import softmax_cross_entropy
     except ImportError:
         softmax_cross_entropy = None
@@ -68,7 +73,7 @@ def import_core():
             "not implemented yet:\n  " + "\n  ".join(missing) + "\n"
             "Write these in core/, then run this script again."
         )
-    return Sequential, Affine, ReLU, softmax_cross_entropy, Adam
+    return Sequential, Affine, ReLU, Dropout, softmax_cross_entropy, Adam
 
 
 def accuracy(model, loss_fn, X: np.ndarray, y: np.ndarray, batch_size: int = 512):
@@ -81,6 +86,10 @@ def accuracy(model, loss_fn, X: np.ndarray, y: np.ndarray, batch_size: int = 512
     Returns:
         (mean_loss, accuracy) as floats.
     """
+    # Dropout must be off while measuring, or every number here is computed
+    # through a random mask and comes out noisy and pessimistic.
+    model.eval()
+
     total_loss, correct = 0.0, 0
     loader = DataLoader(X, y, batch_size=batch_size, shuffle=False)
     for batch_x, batch_y in loader:
@@ -88,6 +97,8 @@ def accuracy(model, loss_fn, X: np.ndarray, y: np.ndarray, batch_size: int = 512
         loss, _ = loss_fn(scores, batch_y)
         total_loss += float(loss) * batch_x.shape[0]
         correct += int((np.argmax(scores, axis=1) == batch_y).sum())
+
+    model.train()
     return total_loss / X.shape[0], correct / X.shape[0]
 
 
@@ -98,6 +109,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--hidden", type=int, nargs="+", default=[256])
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=0.0,
+        help="drop probability after each hidden ReLU (0.0 disables dropout)",
+    )
     parser.add_argument(
         "--limit",
         type=int,
@@ -115,7 +132,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    Sequential, Affine, ReLU, softmax_cross_entropy, Adam = import_core()
+    Sequential, Affine, ReLU, Dropout, softmax_cross_entropy, Adam = import_core()
 
     np.random.seed(args.seed)
     data = load_mnist(flatten=True, normalize=True, seed=args.seed)
@@ -129,6 +146,8 @@ def main() -> None:
         layers.append(Affine(sizes[i], sizes[i + 1]))
         if i < len(sizes) - 2:
             layers.append(ReLU())
+            if args.dropout > 0.0:
+                layers.append(Dropout(p=args.dropout, seed=args.seed + i))
 
     model = Sequential(layers)
     optimizer = Adam(lr=args.lr)

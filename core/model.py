@@ -35,3 +35,17 @@ class Sequential:
             dout = l.backward(dout)
 
         return dout
+
+    def train(self):
+        for l in self.layers:
+            if hasattr(l, "train"):
+                l.train()
+        
+        return self
+
+    def eval(self):
+        for l in self.layers:
+            if hasattr(l, "eval"):
+                l.eval()
+
+        return self
