@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Optional, Tuple
 
 
-class Conv2D:
+class Conv2d:
 
     def __init__(self, in_channels: int, out_channels: int,
                  kernel_size: int = 3, stride: int = 1, padding: int = 0) -> None:
@@ -38,7 +38,7 @@ class Conv2D:
         W_out = (W + 2 * p - k) // s + 1
 
         windows = np.lib.stride_tricks.sliding_window_view(xp, (k, k), axis=(2, 3))
-        windows = windows[:, :, ::s, ::s]          # (N, C_in, H_out, W_out, k, k)
+        windows = windows[:, :, ::s, ::s]
 
         out = np.einsum("nchwij,ocij->nohw", windows, W_, optimize=True)
         out += b[None, :, None, None]
